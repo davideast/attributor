@@ -10,14 +10,59 @@
 
 @interface ViewController ()
 @property (weak, nonatomic) IBOutlet UITextView *body;
+@property (weak, nonatomic) IBOutlet UILabel *headline;
+@property (weak, nonatomic) IBOutlet UIButton *outlineButton;
 
 @end
 
 @implementation ViewController
 
-- (void)viewDidLoad {
+- (void)viewDidLoad
+{
   [super viewDidLoad];
   // Do any additional setup after loading the view, typically from a nib.
+  NSMutableAttributedString *title =
+  [[NSMutableAttributedString alloc] initWithString:self.outlineButton.currentTitle];
+  
+  [title setAttributes:@{
+                         NSStrokeWidthAttributeName: @-3,
+                         NSStrokeColorAttributeName: self.outlineButton.tintColor
+                         }range:NSMakeRange(0, [title length])];
+  [self.outlineButton setAttributedTitle:title forState:UIControlStateNormal];
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+  [super viewWillAppear:animated];
+  
+  // set font prefs on appear
+  [self usePreferredFonts];
+  
+  // listen for when the fonts change
+  NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+  [center addObserver:self
+             selector:@selector(preferredFontsChanged:)
+                 name:UIContentSizeCategoryDidChangeNotification
+               object:nil];
+  
+}
+
+- (void)viewWillDisappear:(BOOL)animated
+{
+  // stop listening when view disappears
+  [[NSNotificationCenter defaultCenter] removeObserver:self
+                                                  name:UIContentSizeCategoryDidChangeNotification object:nil];
+}
+
+- (void)preferredFontsChanged:(NSNotification *)notification
+{
+  [self usePreferredFonts];
+}
+
+- (void)usePreferredFonts
+{
+  self.body.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
+  self.headline.font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
 }
 
 - (IBAction)changeBodySelectionColorToMatchBackgroundOfButton:(UIButton *)sender
